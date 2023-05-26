@@ -39,4 +39,5 @@ export class TypeOrmConfigModule {
   }
 }
 
+//Export datasource as default so it is readable by TypeORM CLI
 export default new TypeOrmConfigModule(new ConfigService()).dataSource;

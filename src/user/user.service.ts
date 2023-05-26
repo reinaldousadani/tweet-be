@@ -1,15 +1,28 @@
-import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { Injectable } from "@nestjs/common";
+import { CreateUserDto } from "./dto/create-user.dto";
+import { UpdateUserDto } from "./dto/update-user.dto";
+import { InjectRepository } from "@nestjs/typeorm";
+import { User } from "./entities/user.entity";
+import { Like, Repository } from "typeorm";
+import { dataPerPage } from "src/configs/constants";
 
 @Injectable()
 export class UserService {
+  constructor(
+    @InjectRepository(User)
+    private userRepository: Repository<User>
+  ) {}
+
   create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+    return "This action adds a new user";
   }
 
-  findAll() {
-    return `This action returns all user`;
+  findMany(q: string, page: number) {
+    return this.userRepository.findAndCount({
+      where: [{ username: Like(`%${q}%`) }, { id: Like(`%${q}%`) }],
+      skip: (page - 1) * dataPerPage,
+      take: dataPerPage,
+    });
   }
 
   findOne(id: number) {
