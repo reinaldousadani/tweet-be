@@ -1,7 +1,12 @@
+import * as dotenv from "dotenv";
 import { Module } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { DataSource } from "typeorm";
+
+dotenv.config();
+
+const configService = new ConfigService();
 
 @Module({
   imports: [],
@@ -40,4 +45,4 @@ export class TypeOrmConfigModule {
 }
 
 //Export datasource as default so it is readable by TypeORM CLI
-export default new TypeOrmConfigModule(new ConfigService()).dataSource;
+export default new TypeOrmConfigModule(configService).dataSource;
