@@ -13,8 +13,8 @@ export class UserService {
     private userRepository: Repository<User>
   ) {}
 
-  create(createUserDto: CreateUserDto) {
-    return "This action adds a new user";
+  async create(createUserDto: CreateUserDto) {
+    return this.userRepository.save(createUserDto);
   }
 
   findMany(q: string, page: number) {
