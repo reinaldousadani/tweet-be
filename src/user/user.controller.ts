@@ -22,8 +22,8 @@ import {
   isNumericString,
 } from "src/commons/utils/utils";
 import { dataPerPage } from "src/configs/constants";
-import qs from "querystring";
 import { LinksAssembler } from "src/commons/assemblers/links.assembler";
+import QueryString from "node:querystring";
 
 @Controller("user")
 export class UserController {
@@ -46,38 +46,30 @@ export class UserController {
     @Req() req: Request
   ) {
     q = typeof q === "undefined" ? "" : q;
-    page = typeof page === "undefined" || !isNumericString(page) ? "1" : "";
+    page = typeof page === "undefined" || !isNumericString(page) ? "1" : page;
     try {
       const result = await this.userService.findMany(q, parseInt(page));
+
       const responseObject = new PaginatedResultAssembler(
         result[1],
-        analyzeNextPage(parseInt(page), dataPerPage, result[1], () =>
-          constructApiResourceUrl(
+        analyzeNextPage(parseInt(page), dataPerPage, result[1], () => {
+          return constructApiResourceUrl(
             req,
             "user",
-            qs.stringify({ q, page: parseInt(page) + 1 })
-          )
-        ),
+            QueryString.stringify({ q, page })
+          );
+        }),
         analyzePrevPage(parseInt(page), result[0].length, () =>
           constructApiResourceUrl(
             req,
             "user",
-            qs.stringify({ q, page: parseInt(page) - 1 })
+            QueryString.stringify({ q, page: parseInt(page) - 1 })
           )
         ),
         result[0].map((user) => {
           const assembledObj = new LinksAssembler<GetUserResponseDto>(
             new GetUserResponseDto(user.id, user.username),
-            [
-              {
-                name: "self",
-                targetUrl: constructApiResourceUrl(req, `user/${user.id}`),
-              },
-              {
-                name: "user",
-                targetUrl: constructApiResourceUrl(req, `user`),
-              },
-            ]
+            []
           );
           return assembledObj.getObject();
         })
