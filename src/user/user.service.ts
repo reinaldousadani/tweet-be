@@ -14,19 +14,31 @@ export class UserService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    return this.userRepository.save(createUserDto);
-  }
-
-  findMany(q: string, page: number) {
-    return this.userRepository.findAndCount({
-      where: [{ username: Like(`%${q}%`) }, { id: Like(`%${q}%`) }],
-      skip: (page - 1) * dataPerPage,
-      take: dataPerPage,
+    return this.userRepository.save(createUserDto).then((user) => {
+      return { ...user, password: "***" };
     });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  findMany(q: string, page: number) {
+    return this.userRepository
+      .findAndCount({
+        where: [{ username: Like(`%${q}%`) }, { id: Like(`%${q}%`) }],
+        skip: (page - 1) * dataPerPage,
+        take: dataPerPage,
+      })
+      .then((res) => {
+        res[0] = res[0].map((user) => {
+          return { ...user, password: "***" };
+        });
+
+        return res;
+      });
+  }
+
+  findOne(id: string) {
+    return this.userRepository.findOne({ where: { id: id } }).then((res) => {
+      return { ...res, password: "***" };
+    });
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {

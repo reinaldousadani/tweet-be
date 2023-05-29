@@ -13,7 +13,6 @@ import { UserService } from "./user.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { PaginatedResultAssembler } from "src/commons/assemblers/paginated-result.assembler";
-import { GetUserResponseDto } from "./dto/get-user-response.dto";
 import { Request } from "express";
 import {
   analyzeNextPage,
@@ -23,7 +22,8 @@ import {
 } from "src/commons/utils/utils";
 import { dataPerPage } from "src/configs/constants";
 import { LinksAssembler } from "src/commons/assemblers/links.assembler";
-import QueryString from "node:querystring";
+import * as qs from "qs";
+import { User } from "./entities/user.entity";
 
 @Controller("user")
 export class UserController {
@@ -56,21 +56,27 @@ export class UserController {
           return constructApiResourceUrl(
             req,
             "user",
-            QueryString.stringify({ q, page })
+            qs.stringify({ q, page: parseInt(page) + 1 })
           );
         }),
         analyzePrevPage(parseInt(page), result[0].length, () =>
           constructApiResourceUrl(
             req,
             "user",
-            QueryString.stringify({ q, page: parseInt(page) - 1 })
+            qs.stringify({ q, page: parseInt(page) - 1 })
           )
         ),
         result[0].map((user) => {
-          const assembledObj = new LinksAssembler<GetUserResponseDto>(
-            new GetUserResponseDto(user.id, user.username),
-            []
-          );
+          const assembledObj = new LinksAssembler<User>(user, [
+            {
+              name: "self",
+              targetUrl: constructApiResourceUrl(req, `user/${user.id}`),
+            },
+            {
+              name: "users",
+              targetUrl: constructApiResourceUrl(req, `user`),
+            },
+          ]);
           return assembledObj.getObject();
         })
       );
@@ -82,8 +88,13 @@ export class UserController {
   }
 
   @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.userService.findOne(+id);
+  async findOne(@Param("id") id: string) {
+    try {
+      const result = await this.userService.findOne(id);
+      return result;
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Patch(":id")
