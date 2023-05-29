@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
   Req,
+  UseGuards,
 } from "@nestjs/common";
 import { TweetService } from "./tweet.service";
 import { CreateTweetDto } from "./dto/create-tweet.dto";
@@ -24,11 +25,13 @@ import { LinksAssembler } from "src/commons/assemblers/links.assembler";
 import { Tweet } from "./entities/tweet.entity";
 import * as qs from "qs";
 import { dataPerPage } from "src/configs/constants";
+import { AuthGuard } from "src/auth/auth.guard";
 
 @Controller("tweet")
 export class TweetController {
   constructor(private readonly tweetService: TweetService) {}
 
+  @UseGuards(AuthGuard)
   @Post()
   create(@Body() createTweetDto: CreateTweetDto) {
     return this.tweetService.create(createTweetDto);
