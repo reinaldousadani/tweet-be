@@ -26,17 +26,20 @@ import { Tweet } from "./entities/tweet.entity";
 import * as qs from "qs";
 import { dataPerPage } from "src/configs/constants";
 import { AuthGuard } from "src/auth/auth.guard";
+import { Public } from "src/auth/decorators/public.decorator";
 
 @Controller("tweet")
 export class TweetController {
   constructor(private readonly tweetService: TweetService) {}
 
-  @UseGuards(AuthGuard)
   @Post()
-  create(@Body() createTweetDto: CreateTweetDto) {
-    return this.tweetService.create(createTweetDto);
+  create(@Body() createTweetDto: CreateTweetDto, @Req() req: Request) {
+    console.log("🚀 ~ TweetController ~ create ~ req:", req);
+    // return this.tweetService.create(createTweetDto);
+    return `Hello`;
   }
 
+  @Public()
   @Get()
   async findMany(
     @Query("q") q: string,
