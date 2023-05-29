@@ -45,6 +45,10 @@ export class UserService {
     });
   }
 
+  async dangerousFindByUsername(username: string) {
+    return this.userRepository.findOne({ where: { username: username } });
+  }
+
   update(id: string, updateUserDto: UpdateUserDto) {
     return this.userRepository.update({ id: id }, updateUserDto);
   }

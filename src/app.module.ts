@@ -7,6 +7,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { DataSource } from "typeorm";
 import { UserModule } from './user/user.module';
 import { TweetModule } from './tweet/tweet.module';
+import { AuthModule } from "./auth/auth.module";
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { TweetModule } from './tweet/tweet.module';
     }),
     UserModule,
     TweetModule,
+    AuthModule
   ],
   controllers: [AppController],
   providers: [AppService],

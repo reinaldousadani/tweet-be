@@ -1,15 +1,27 @@
-import { Injectable } from '@nestjs/common';
-import { CreateTweetDto } from './dto/create-tweet.dto';
-import { UpdateTweetDto } from './dto/update-tweet.dto';
+import { Injectable } from "@nestjs/common";
+import { CreateTweetDto } from "./dto/create-tweet.dto";
+import { UpdateTweetDto } from "./dto/update-tweet.dto";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Tweet } from "./entities/tweet.entity";
+import { Like, Repository } from "typeorm";
+import { dataPerPage } from "src/configs/constants";
 
 @Injectable()
 export class TweetService {
+  constructor(
+    @InjectRepository(Tweet) private tweetRepository: Repository<Tweet>
+  ) {}
+
   create(createTweetDto: CreateTweetDto) {
-    return 'This action adds a new tweet';
+    return "This action adds a new tweet";
   }
 
-  findAll() {
-    return `This action returns all tweet`;
+  async findMany(q: string, page: number) {
+    return this.tweetRepository.findAndCount({
+      where: [{ content: Like(`%${q}%`) }, { id: Like(`%${q}%`) }],
+      skip: (page - 1) * dataPerPage,
+      take: dataPerPage,
+    });
   }
 
   findOne(id: number) {
