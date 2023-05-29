@@ -35,17 +35,21 @@ export class UserService {
       });
   }
 
-  findOne(id: string) {
+  async findOne(id: string) {
     return this.userRepository.findOne({ where: { id: id } }).then((res) => {
-      return { ...res, password: "***" };
+      if (res === null) {
+        return res;
+      } else {
+        return { ...res, password: "***" };
+      }
     });
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  update(id: string, updateUserDto: UpdateUserDto) {
+    return this.userRepository.update({ id: id }, updateUserDto);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  remove(id: string) {
+    return this.userRepository.delete({ id: id });
   }
 }

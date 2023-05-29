@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
   Req,
+  BadRequestException,
 } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { CreateUserDto } from "./dto/create-user.dto";
@@ -98,12 +99,25 @@ export class UserController {
   }
 
   @Patch(":id")
-  update(@Param("id") id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
+  async update(@Param("id") id: string, @Body() updateUserDto: UpdateUserDto) {
+    try {
+      if (updateUserDto["id"]) {
+        throw new BadRequestException();
+      }
+      const res = this.userService.update(id, updateUserDto);
+      return res;
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Delete(":id")
-  remove(@Param("id") id: string) {
-    return this.userService.remove(+id);
+  async remove(@Param("id") id: string) {
+    try {
+      const res = this.userService.remove(id);
+      return res;
+    } catch (error) {
+      throw error;
+    }
   }
 }

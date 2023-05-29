@@ -1,4 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn, Unique } from "typeorm";
+import { Tweet } from "src/tweet/entities/tweet.entity";
+import {
+  Column,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  Unique,
+} from "typeorm";
 
 @Entity()
 @Unique(["username"])
@@ -11,4 +18,7 @@ export class User {
 
   @Column()
   password: string;
+
+  @OneToMany(() => Tweet, (tweet) => tweet.user)
+  tweets: Tweet[];
 }
