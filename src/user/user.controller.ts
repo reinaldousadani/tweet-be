@@ -84,7 +84,9 @@ export class UserController {
         })
       );
 
-      return responseObject;
+      return new LinksAssembler(responseObject, [
+        { name: "self", targetUrl: constructApiResourceUrl(req, "user") },
+      ]).getObject();
     } catch (error) {
       throw error;
     }

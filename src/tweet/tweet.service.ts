@@ -20,7 +20,7 @@ export class TweetService {
     newTweet.content = createTweetDto.content;
     user.id = createTweetDto.user.sub;
     user.username = createTweetDto.user.username;
-    user.password = "***"
+    user.password = "***";
     newTweet.user = user;
     return this.tweetRepository.save(newTweet);
   }
@@ -37,7 +37,7 @@ export class TweetService {
         res[0] = res[0].map((tweet) => {
           return { ...tweet, user: { ...tweet.user, password: "***" } };
         });
-        return res
+        return res;
       });
   }
 
@@ -56,8 +56,8 @@ export class TweetService {
       });
   }
 
-  update(id: number, updateTweetDto: UpdateTweetDto) {
-    return `This action updates a #${id} tweet`;
+  update(id: string, updateTweetDto: UpdateTweetDto) {
+    return this.tweetRepository.update({ id }, updateTweetDto);
   }
 
   remove(id: number) {

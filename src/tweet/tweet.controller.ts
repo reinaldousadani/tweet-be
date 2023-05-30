@@ -8,6 +8,8 @@ import {
   Delete,
   Query,
   Req,
+  BadRequestException,
+  UnauthorizedException,
 } from "@nestjs/common";
 import { TweetService } from "./tweet.service";
 import { CreateTweetDto } from "./dto/create-tweet.dto";
@@ -99,7 +101,9 @@ export class TweetController {
           return assembledObj.getObject();
         })
       );
-      return responseObject;
+      return new LinksAssembler(responseObject, [
+        { name: "self", targetUrl: constructApiResourceUrl(req, "tweet") },
+      ]).getObject();
     } catch (error) {
       throw error;
     }
@@ -117,8 +121,26 @@ export class TweetController {
   }
 
   @Patch(":id")
-  update(@Param("id") id: string, @Body() updateTweetDto: UpdateTweetDto) {
-    return this.tweetService.update(+id, updateTweetDto);
+  async update(
+    @Param("id") id: string,
+    @Body() updateTweetDto: UpdateTweetDto,
+    @Req() req: Request & { user: JwtPayload }
+  ) {
+    try {
+      if (updateTweetDto["id"]) {
+        throw new BadRequestException();
+      }
+      let tweet = await this.tweetService.findOne(id);
+      if (req.user.sub !== tweet.user.id) {
+        throw new UnauthorizedException();
+      }
+      tweet = { ...tweet, content: updateTweetDto.content };
+
+      const res = await this.tweetService.update(id, tweet);
+      return res;
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Delete(":id")
