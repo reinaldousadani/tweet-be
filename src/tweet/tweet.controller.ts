@@ -10,6 +10,8 @@ import {
   Req,
   BadRequestException,
   UnauthorizedException,
+  NotFoundException,
+  HttpCode,
 } from "@nestjs/common";
 import { TweetService } from "./tweet.service";
 import { CreateTweetDto } from "./dto/create-tweet.dto";
@@ -114,6 +116,7 @@ export class TweetController {
   async findOne(@Param("id") id: string) {
     try {
       const result = await this.tweetService.findOne(id);
+      if (!result) throw new NotFoundException();
       return result;
     } catch (error) {
       throw error;
@@ -127,24 +130,39 @@ export class TweetController {
     @Req() req: Request & { user: JwtPayload }
   ) {
     try {
-      if (updateTweetDto["id"]) {
-        throw new BadRequestException();
-      }
+      if (updateTweetDto["id"]) throw new BadRequestException();
+
       let tweet = await this.tweetService.findOne(id);
+      if (!tweet) throw new NotFoundException();
       if (req.user.sub !== tweet.user.id) {
         throw new UnauthorizedException();
       }
       tweet = { ...tweet, content: updateTweetDto.content };
 
-      const res = await this.tweetService.update(id, tweet);
-      return res;
+      await this.tweetService.update(id, tweet);
+      return tweet;
     } catch (error) {
       throw error;
     }
   }
 
+  @HttpCode(204)
   @Delete(":id")
-  remove(@Param("id") id: string) {
-    return this.tweetService.remove(id);
+  async remove(
+    @Param("id") id: string,
+    @Req()
+    req: Request & {
+      user: JwtPayload;
+    }
+  ) {
+    try {
+      const tweet = await this.tweetService.findOne(id);
+      if (!tweet) throw new NotFoundException();
+      if (req.user.sub !== tweet.user.id) throw new UnauthorizedException();
+      await this.tweetService.remove(id);
+      return;
+    } catch (error) {
+      throw error;
+    }
   }
 }
