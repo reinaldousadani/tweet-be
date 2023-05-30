@@ -8,7 +8,6 @@ import {
   Delete,
   Query,
   Req,
-  UseGuards,
 } from "@nestjs/common";
 import { TweetService } from "./tweet.service";
 import { CreateTweetDto } from "./dto/create-tweet.dto";
@@ -25,18 +24,32 @@ import { LinksAssembler } from "src/commons/assemblers/links.assembler";
 import { Tweet } from "./entities/tweet.entity";
 import * as qs from "qs";
 import { dataPerPage } from "src/configs/constants";
-import { AuthGuard } from "src/auth/auth.guard";
 import { Public } from "src/auth/decorators/public.decorator";
+import { JwtPayload } from "src/auth/dto/jwt-payload";
 
 @Controller("tweet")
 export class TweetController {
   constructor(private readonly tweetService: TweetService) {}
 
   @Post()
-  create(@Body() createTweetDto: CreateTweetDto, @Req() req: Request) {
-    console.log("🚀 ~ TweetController ~ create ~ req:", req);
-    // return this.tweetService.create(createTweetDto);
-    return `Hello`;
+  async create(
+    @Body() createTweetDto: CreateTweetDto,
+    @Req()
+    req: Request & {
+      user: JwtPayload;
+    }
+  ) {
+    try {
+      const user = req["user"] as JwtPayload;
+      const result = await this.tweetService.create({
+        ...createTweetDto,
+        user: user,
+      });
+
+      return result;
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Public()
@@ -77,6 +90,10 @@ export class TweetController {
               name: "tweets",
               targetUrl: constructApiResourceUrl(req, "tweet"),
             },
+            {
+              name: "user",
+              targetUrl: constructApiResourceUrl(req, `user/${tweet.user.id}`),
+            },
           ]);
 
           return assembledObj.getObject();
@@ -88,9 +105,15 @@ export class TweetController {
     }
   }
 
+  @Public()
   @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.tweetService.findOne(+id);
+  async findOne(@Param("id") id: string) {
+    try {
+      const result = await this.tweetService.findOne(id);
+      return result;
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Patch(":id")

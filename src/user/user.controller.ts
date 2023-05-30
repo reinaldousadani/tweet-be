@@ -25,6 +25,7 @@ import { dataPerPage } from "src/configs/constants";
 import { LinksAssembler } from "src/commons/assemblers/links.assembler";
 import * as qs from "qs";
 import { User } from "./entities/user.entity";
+import { Public } from "src/auth/decorators/public.decorator";
 
 @Controller("user")
 export class UserController {
@@ -40,6 +41,7 @@ export class UserController {
     }
   }
 
+  @Public()
   @Get()
   async findMany(
     @Query("q") q: string,
