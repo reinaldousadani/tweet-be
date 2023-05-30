@@ -8,6 +8,7 @@ import { DataSource } from "typeorm";
 import { UserModule } from './user/user.module';
 import { TweetModule } from './tweet/tweet.module';
 import { AuthModule } from "./auth/auth.module";
+import { FollowMapModule } from './follow-map/follow-map.module';
 
 @Module({
   imports: [
@@ -26,7 +27,8 @@ import { AuthModule } from "./auth/auth.module";
     }),
     UserModule,
     TweetModule,
-    AuthModule
+    AuthModule,
+    FollowMapModule
   ],
   controllers: [AppController],
   providers: [AppService],

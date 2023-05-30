@@ -1,3 +1,4 @@
+import { FollowMap } from "src/follow-map/entities/follow-map.entity";
 import { Tweet } from "src/tweet/entities/tweet.entity";
 import {
   Column,
@@ -21,4 +22,7 @@ export class User {
 
   @OneToMany(() => Tweet, (tweet) => tweet.user, { cascade: true })
   tweets: Tweet[];
+
+  @OneToMany(() => FollowMap, (followMap) => followMap.user, { cascade: true })
+  followMaps: FollowMap[];
 }
