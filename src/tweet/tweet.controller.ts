@@ -12,6 +12,7 @@ import {
   UnauthorizedException,
   NotFoundException,
   HttpCode,
+  HttpStatus,
 } from "@nestjs/common";
 import { TweetService } from "./tweet.service";
 import { CreateTweetDto } from "./dto/create-tweet.dto";
@@ -185,7 +186,7 @@ export class TweetController {
     }
   }
 
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(":id")
   async remove(
     @Param("id") id: string,

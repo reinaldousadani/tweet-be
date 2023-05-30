@@ -12,6 +12,7 @@ import {
   NotFoundException,
   UnauthorizedException,
   HttpCode,
+  HttpStatus,
 } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { CreateUserDto } from "./dto/create-user.dto";
@@ -105,20 +106,25 @@ export class UserController {
     }
   }
 
+  @Public()
   @Get(":id")
   async findOne(@Param("id") id: string, @Req() req: Request) {
     try {
       const result = await this.userService.findOne(id);
-      return new LinksAssembler<User>(result, [
-        {
-          name: "self",
-          targetUrl: constructApiResourceUrl(req, `user/${result.id}`),
-        },
-        {
-          name: "user",
-          targetUrl: constructApiResourceUrl(req, `user`),
-        },
-      ]).getObject();
+      if (!result) {
+        throw new NotFoundException();
+      } else {
+        return new LinksAssembler<User>(result, [
+          {
+            name: "self",
+            targetUrl: constructApiResourceUrl(req, `user/${result.id}`),
+          },
+          {
+            name: "users",
+            targetUrl: constructApiResourceUrl(req, `user`),
+          },
+        ]).getObject();
+      }
     } catch (error) {
       throw error;
     }
@@ -143,12 +149,21 @@ export class UserController {
     }
   }
 
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(":id")
-  async remove(@Param("id") id: string) {
+  async remove(
+    @Param("id") id: string,
+    @Req()
+    req: Request & {
+      user: JwtPayload;
+    }
+  ) {
     try {
-      const res = this.userService.remove(id);
-      return res;
+      const user = await this.userService.findOne(id);
+      if (!user) throw new NotFoundException();
+      if (user.id !== req.user.sub) throw new UnauthorizedException();
+      await this.userService.remove(id);
+      return;
     } catch (error) {
       throw error;
     }

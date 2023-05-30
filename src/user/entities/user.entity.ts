@@ -19,6 +19,6 @@ export class User {
   @Column()
   password: string;
 
-  @OneToMany(() => Tweet, (tweet) => tweet.user)
+  @OneToMany(() => Tweet, (tweet) => tweet.user, { cascade: true })
   tweets: Tweet[];
 }
