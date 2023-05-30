@@ -145,6 +145,6 @@ export class TweetController {
 
   @Delete(":id")
   remove(@Param("id") id: string) {
-    return this.tweetService.remove(+id);
+    return this.tweetService.remove(id);
   }
 }

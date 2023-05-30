@@ -60,7 +60,7 @@ export class TweetService {
     return this.tweetRepository.update({ id }, updateTweetDto);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} tweet`;
+  remove(id: string) {
+    return this.tweetRepository.delete({ id });
   }
 }
