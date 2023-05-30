@@ -45,12 +45,25 @@ export class TweetController {
   ) {
     try {
       const user = req["user"] as JwtPayload;
-      const result = await this.tweetService.create({
+      const tweet = await this.tweetService.create({
         ...createTweetDto,
         user: user,
       });
 
-      return result;
+      return new LinksAssembler<Tweet>(tweet, [
+        {
+          name: "self",
+          targetUrl: constructApiResourceUrl(req, `tweet/${tweet.id}`),
+        },
+        {
+          name: `tweets`,
+          targetUrl: constructApiResourceUrl(req, `tweet`),
+        },
+        {
+          name: `user`,
+          targetUrl: constructApiResourceUrl(req, `user/${tweet.user.id}`),
+        },
+      ]).getObject();
     } catch (error) {
       throw error;
     }
@@ -113,11 +126,24 @@ export class TweetController {
 
   @Public()
   @Get(":id")
-  async findOne(@Param("id") id: string) {
+  async findOne(@Param("id") id: string, @Req() req: Request) {
     try {
-      const result = await this.tweetService.findOne(id);
-      if (!result) throw new NotFoundException();
-      return result;
+      const tweet = await this.tweetService.findOne(id);
+      if (!tweet) throw new NotFoundException();
+      return new LinksAssembler<Tweet>(tweet, [
+        {
+          name: "self",
+          targetUrl: constructApiResourceUrl(req, `tweet/${tweet.id}`),
+        },
+        {
+          name: `tweets`,
+          targetUrl: constructApiResourceUrl(req, `tweet`),
+        },
+        {
+          name: `user`,
+          targetUrl: constructApiResourceUrl(req, `user/${tweet.user.id}`),
+        },
+      ]).getObject();
     } catch (error) {
       throw error;
     }
@@ -140,7 +166,20 @@ export class TweetController {
       tweet = { ...tweet, content: updateTweetDto.content };
 
       await this.tweetService.update(id, tweet);
-      return tweet;
+      return new LinksAssembler<Tweet>(tweet, [
+        {
+          name: "self",
+          targetUrl: constructApiResourceUrl(req, `tweet/${tweet.id}`),
+        },
+        {
+          name: `tweets`,
+          targetUrl: constructApiResourceUrl(req, `tweet`),
+        },
+        {
+          name: `user`,
+          targetUrl: constructApiResourceUrl(req, `user/${tweet.user.id}`),
+        },
+      ]).getObject();
     } catch (error) {
       throw error;
     }

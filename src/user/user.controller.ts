@@ -11,6 +11,7 @@ import {
   BadRequestException,
   NotFoundException,
   UnauthorizedException,
+  HttpCode,
 } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { CreateUserDto } from "./dto/create-user.dto";
@@ -35,10 +36,19 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  async create(@Body() createUserDto: CreateUserDto) {
+  async create(@Body() createUserDto: CreateUserDto, @Req() req: Request) {
     try {
       const res = await this.userService.create(createUserDto);
-      return { ...res, password: "***" };
+      return new LinksAssembler<User>({ ...res, password: "***" }, [
+        {
+          name: "self",
+          targetUrl: constructApiResourceUrl(req, `user/${res.id}`),
+        },
+        {
+          name: "users",
+          targetUrl: constructApiResourceUrl(req, `user`),
+        },
+      ]).getObject();
     } catch (error) {
       throw error;
     }
@@ -96,10 +106,19 @@ export class UserController {
   }
 
   @Get(":id")
-  async findOne(@Param("id") id: string) {
+  async findOne(@Param("id") id: string, @Req() req: Request) {
     try {
       const result = await this.userService.findOne(id);
-      return result;
+      return new LinksAssembler<User>(result, [
+        {
+          name: "self",
+          targetUrl: constructApiResourceUrl(req, `user/${result.id}`),
+        },
+        {
+          name: "user",
+          targetUrl: constructApiResourceUrl(req, `user`),
+        },
+      ]).getObject();
     } catch (error) {
       throw error;
     }
@@ -124,6 +143,7 @@ export class UserController {
     }
   }
 
+  @HttpCode(204)
   @Delete(":id")
   async remove(@Param("id") id: string) {
     try {
