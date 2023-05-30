@@ -1,7 +1,7 @@
 const { MigrationInterface, QueryRunner } = require("typeorm");
 
-module.exports = class Init1685437732855 {
-    name = 'Init1685437732855'
+module.exports = class Init1685439709598 {
+    name = 'Init1685439709598'
 
     async up(queryRunner) {
         await queryRunner.query(`CREATE TABLE IF NOT EXISTS \`tweet\` (\`id\` varchar(36) NOT NULL, \`content\` varchar(255) NOT NULL, \`userId\` varchar(36) NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);

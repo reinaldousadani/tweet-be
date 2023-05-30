@@ -142,8 +142,17 @@ export class UserController {
       if (!user) throw new NotFoundException();
       if (req.user.sub !== user.id) throw new UnauthorizedException();
       user = { ...user, ...updateUserDto };
-      const res = this.userService.update(id, user);
-      return { ...user, password: "***" };
+      await this.userService.update(id, user);
+      return new LinksAssembler<User>(user, [
+        {
+          name: "self",
+          targetUrl: constructApiResourceUrl(req, `user/${user.id}`),
+        },
+        {
+          name: "users",
+          targetUrl: constructApiResourceUrl(req, `user`),
+        },
+      ]).getObject();
     } catch (error) {
       throw error;
     }
