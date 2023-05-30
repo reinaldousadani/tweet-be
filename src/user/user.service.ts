@@ -10,7 +10,7 @@ import { dataPerPage } from "src/configs/constants";
 export class UserService {
   constructor(
     @InjectRepository(User)
-    private userRepository: Repository<User>,
+    private userRepository: Repository<User>
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -43,6 +43,10 @@ export class UserService {
         return { ...res, password: "***" };
       }
     });
+  }
+
+  async dangerousFindOne(id: string) {
+    return this.userRepository.findOne({ where: { id } });
   }
 
   async dangerousFindByUsername(username: string) {

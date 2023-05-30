@@ -9,6 +9,8 @@ import {
   Query,
   Req,
   BadRequestException,
+  NotFoundException,
+  UnauthorizedException,
 } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { CreateUserDto } from "./dto/create-user.dto";
@@ -26,6 +28,7 @@ import { LinksAssembler } from "src/commons/assemblers/links.assembler";
 import * as qs from "qs";
 import { User } from "./entities/user.entity";
 import { Public } from "src/auth/decorators/public.decorator";
+import { JwtPayload } from "src/auth/dto/jwt-payload";
 
 @Controller("user")
 export class UserController {
@@ -103,13 +106,19 @@ export class UserController {
   }
 
   @Patch(":id")
-  async update(@Param("id") id: string, @Body() updateUserDto: UpdateUserDto) {
+  async update(
+    @Param("id") id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @Req() req: Request & { user: JwtPayload }
+  ) {
     try {
-      if (updateUserDto["id"]) {
-        throw new BadRequestException();
-      }
-      const res = this.userService.update(id, updateUserDto);
-      return res;
+      if (updateUserDto["id"]) throw new BadRequestException();
+      let user = await this.userService.dangerousFindOne(id);
+      if (!user) throw new NotFoundException();
+      if (req.user.sub !== user.id) throw new UnauthorizedException();
+      user = { ...user, ...updateUserDto };
+      const res = this.userService.update(id, user);
+      return { ...user, password: "***" };
     } catch (error) {
       throw error;
     }
